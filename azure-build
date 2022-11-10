@@ -1,0 +1,90 @@
+#! /bin/bash
+
+<<comment
+Prerequisites:
+-This script was tested on a new Mint21 machine
+
+Description:
+-This script clones all repos needed to build an Azure image for the WLSOM (SAMA5 MPU) into the newly created directory
+-The script copies bblayers.conf, local.conf and defconfig into proper folders for building correctly
+-The script copies rebuild script into the build folder, so the image can be rebuilt by just running this script as ". az.rebuild" from the build folder
+-The script also puts az.clean, az.rebuild-t1s, and az.sdk scripts into the build folder
+-Lastly it builds the final image
+
+
+Usage:
+". azure-build"
+
+Examples:
+For new installs use the following command with the script in your created build folder:
+". azure-build"
+This will clone all repos and build an Azure hub image
+
+To build only, after you have already setup, run:
+". az.rebuild" from the build directory
+
+ Written by:
+ __  __     
+/\ \/ /     
+\ \  _"-.  
+ \ \_\ \_\  
+  \/_/\/_/ 
+
+
+Notes:
+This script is based on documents written by Swapna Gurumani and John Haroian
+  
+comment
+
+rd='\e[0;31m'
+lg='\e[1;32m'
+lp='\e[1;35m'
+cy='\e[0;36m'
+NC='\e[0m'
+
+#--------------START WORK--------------------
+sudo apt-get update
+sudo apt-get -y upgrade
+
+sudo apt-get -y install gawk wget git-core git-lfs diffstat unzip texinfo gcc-multilib \
+     build-essential chrpath socat cpio python python3 python3-pip python3-pexpect \
+     xz-utils debianutils iputils-ping python3-git python3-jinja2 libegl1-mesa libsdl1.2-dev \
+     pylint3 xterm libssl-dev
+
+export CROSS_COMPILE=arm-linux-gnueabi-
+
+echo -e "${rd}-----Cloning Microchip Repos-----${NC}"
+git clone https://github.com/k-mchp/meta-microchip-azure.git
+git clone https://github.com/k-mchp/meta-microchip-azure-t1s.git
+git clone https://git.yoctoproject.org/poky -b dunfell
+git clone https://git.openembedded.org/meta-openembedded -b dunfell
+git clone https://github.com/linux4sam/meta-atmel.git -b dunfell
+
+echo -e "${cy}-----Adding AZURE Repos-----${NC}"
+git clone https://github.com/meta-rust/meta-rust.git
+git clone https://git.yoctoproject.org/meta-virtualization -b dunfell
+git clone https://github.com/Azure/meta-iotedge.git -b dunfell
+
+cd meta-rust
+git checkout 7ff669d8cedd83a2d3efb73073a63b0a7efffddc
+cd ..
+
+cd meta-iotedge
+git checkout 05de0145fb98e9eb107f841e4376560bf8a6bbc3
+cd ..
+
+echo -e "${lg}-----Building Azure Image for WLSOM-----${NC}"
+cd poky
+export TEMPLATECONF=${TEMPLATECONF:-../meta-atmel/conf}
+source oe-init-build-env build-microchip
+cp -r -f -v ../../az.bblayers.conf conf/bblayers.conf
+cp -r -f -v ../../az.local.conf conf/local.conf
+cp -r -f -v ../../az.rust-llvm.inc ../../meta-rust/recipes-devtools/rust/rust-llvm.inc
+cp -r -f -v ../../0001-Fix-GCC-11-header-dependency.patch ../../meta-rust/recipes-devtools/rust/rust-llvm/
+cp -r -f -v ../../0002-llvm-allow-env-override-of-exe-path.patch ../../meta-rust/recipes-devtools/rust/rust-llvm/
+MACHINE=sama5d27-wlsom1-ek-sd bitbake azure-demo
+
+cd ../..
+echo -e "${lp}Install Complete!!! ${NC}\c"
+echo -e "\c"
+

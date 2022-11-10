@@ -1,0 +1,25 @@
+From 667c9f70ab5b685cf5209e3e32fd737520686ba1 Mon Sep 17 00:00:00 2001
+From: Matt Wood <matt.wood@microchip.com>
+Date: Mon, 7 Nov 2022 17:01:00 -0500
+Subject: [PATCH] Fix GCC 11 header dependency
+
+GCC 11 std lib no longer includes other headers used internally
+
+Signed-off-by: Matt Wood <matt.wood@microchip.com>
+---
+ utils/benchmark/src/benchmark_register.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/utils/benchmark/src/benchmark_register.h b/utils/benchmark/src/benchmark_register.h
+index 0705e219f..d4525f251 100644
+--- a/utils/benchmark/src/benchmark_register.h
++++ b/utils/benchmark/src/benchmark_register.h
+@@ -2,7 +2,7 @@
+ #define BENCHMARK_REGISTER_H
+ 
+ #include <vector>
+-
++#include <limits>
+ #include "check.h"
+ 
+ template <typename T>

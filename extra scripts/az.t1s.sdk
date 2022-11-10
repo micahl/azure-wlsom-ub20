@@ -1,0 +1,36 @@
+#! /bin/bash
+
+<<comment
+Prerequisites:
+-This script was tested on a new Mint21 machine
+
+Description:
+-The “az.sdk” file is copied into the build folder, so the user can use it to create an sdk for ompiling custom binary files that can run on the wlsom. 
+
+The user must run the sdk script from the created build folder. The sdk script creates a folder in $BUILDDIR/tmp/deploy/sdk that stores the extracted install script there. Run the “poky-glibc-x86_64-meta-toolchain-cortexa8hf-neon-toolchain-2.5.sh” script in that folder and by default, in will install the actual sdk into the opt/ folder.
+Usage:
+ To create the sdk only, after you have completed inital build.
+". az.sdk" from the builds directory
+
+ Written by:
+ __  __     
+/\ \/ /     
+\ \  _"-.  
+ \ \_\ \_\  
+  \/_/\/_/ 
+  
+comment
+
+lp='\e[1;35m'
+NC='\e[0m'
+
+#--------------START WORK--------------------
+cd poky
+export TEMPLATECONF=${TEMPLATECONF:-../meta-atmel/conf}
+source oe-init-build-env build-microchip
+MACHINE=sama5d27-wlsom1-ek-sd bitbake -c populate_sdk azure-t1s-demo
+
+cd $HOME
+echo -e "${lp}Install Complete!!! ${NC}\c"
+echo -e "\c"
+
