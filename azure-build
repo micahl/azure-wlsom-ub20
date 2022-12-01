@@ -2,7 +2,7 @@
 
 <<comment
 Prerequisites:
--This script was tested on a new Mint21 machine
+-This script was tested on a new Ubuntu 20.04 machine
 
 Description:
 -This script clones all repos needed to build an Azure image for the WLSOM (SAMA5 MPU) into the newly created directory
@@ -64,13 +64,15 @@ echo -e "${cy}-----Adding AZURE Repos-----${NC}"
 git clone https://github.com/meta-rust/meta-rust.git
 git clone https://git.yoctoproject.org/meta-virtualization -b dunfell
 git clone https://github.com/Azure/meta-iotedge.git -b dunfell
+git clone https://git.yoctoproject.org/meta-security -b dunfell
+git clone https://github.com/kraj/meta-clang.git -b dunfell
 
 cd meta-rust
-git checkout 7ff669d8cedd83a2d3efb73073a63b0a7efffddc
+git checkout 458ab61befa4fb5c192cd970ed0db2225f0c5030
 cd ..
 
 cd meta-iotedge
-git checkout 05de0145fb98e9eb107f841e4376560bf8a6bbc3
+git checkout 1cbadf8510a838c327bb705d9e1d23bde1a8a4c0
 cd ..
 
 echo -e "${lg}-----Building Azure Image for WLSOM-----${NC}"
@@ -79,9 +81,6 @@ export TEMPLATECONF=${TEMPLATECONF:-../meta-atmel/conf}
 source oe-init-build-env build-microchip
 cp -r -f -v ../../az.bblayers.conf conf/bblayers.conf
 cp -r -f -v ../../az.local.conf conf/local.conf
-cp -r -f -v ../../az.rust-llvm.inc ../../meta-rust/recipes-devtools/rust/rust-llvm.inc
-cp -r -f -v ../../0001-Fix-GCC-11-header-dependency.patch ../../meta-rust/recipes-devtools/rust/rust-llvm/
-cp -r -f -v ../../0002-llvm-allow-env-override-of-exe-path.patch ../../meta-rust/recipes-devtools/rust/rust-llvm/
 MACHINE=sama5d27-wlsom1-ek-sd bitbake azure-demo
 
 cd ../..
